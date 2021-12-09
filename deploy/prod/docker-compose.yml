@@ -1,0 +1,29 @@
+version: "3"
+services:
+    dns-ui:
+        image: elyspio/dns-ui
+        container_name: dns-ui
+        restart: always
+        volumes:
+            - "./config/front/conf.js:/front/conf.js"
+        environment:
+            AUTHENTICATION_SERVER_URI: "https://elyspio.fr/authentication"
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=frontend"
+            - "traefik.http.middlewares.dns-ui-prefix.stripprefix.prefixes=/dns"
+            - "traefik.http.routers.dns-ui.middlewares=authentication-prefix@docker"
+            - "traefik.http.routers.dns-ui.rule=PathPrefix(`/dns`)"
+            - "traefik.http.services.dns-ui.loadbalancer.server.port=4000"
+            - "traefik.http.routers.dns-ui.entrypoints=http"
+        networks:
+            - dns-ui
+            - frontend
+        ports:
+            - "53:53"
+
+networks:
+    dns-ui:
+        name: dns-ui
+    frontend:
+        external: true
